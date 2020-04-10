@@ -44,6 +44,7 @@ class AnkidownNote:
             parse_keys = res.named.keys()
         except:
             showInfo("Unable to Parse template")
+            self.note = mw.col.newNote()
             return -1
 
         parse_to_key = {}
