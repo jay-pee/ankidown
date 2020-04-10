@@ -164,8 +164,12 @@ class AnkidownImporter(AddCards):
                     text = [text]
                 for raw_note in text:
                     self.buffer.append(AnkidownNote(file=file_name, text=raw_note))
-        for note in self.buffer:
-            note.render(tmp_template=self.template, guess_model=True)
+        rendered_correct_ids = []
+        for i,note in enumerate(self.buffer):
+            state = note.render(tmp_template=self.template, guess_model=True)
+            if state != -1:
+                rendered_correct_ids.append(i) 
+        self.buffer = [self.buffer[i] for i in rendered_correct_ids]
         self.setBuffer(0)  # Given root index
 
     def setBuffer(self, index):
