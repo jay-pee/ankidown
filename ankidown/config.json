@@ -5,6 +5,7 @@
   "format": "markdown",
   "note_separator": "---",
   "last_template": "Basic",
+  "remove_unmatched": false,
   "templates": {
     "Basic": {
       "text": "# {Front}\n{Back}"

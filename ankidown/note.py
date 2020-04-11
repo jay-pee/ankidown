@@ -24,7 +24,7 @@ class AnkidownNote:
 
         if not self.text:
             self.note = mw.col.newNote()
-            return -1
+            return False
 
         if tmp_template:
             template = tmp_template
@@ -43,9 +43,9 @@ class AnkidownNote:
             res = parse(template.gen(), self.text)
             parse_keys = res.named.keys()
         except:
-            showInfo("Unable to Parse template")
+            # showInfo("Unable to Parse template")
             self.note = mw.col.newNote()
-            return -1
+            return False
 
         parse_to_key = {}
         for k in parse_keys:
@@ -53,8 +53,8 @@ class AnkidownNote:
 
         key_to_fields, _ = template.getSimilarity(note.model()["name"])
         if not key_to_fields:
-            showInfo("No mapping to Note has been found")
-            return -1
+            # showInfo("No mapping to Note has been found")
+            return False
         for k, v in res.named.items():
             if k == "Tags":
                 # Uses the normal way Anki processes tag strings
@@ -70,3 +70,4 @@ class AnkidownNote:
                         note[field] = v
 
         self.note = note
+        return True

@@ -76,6 +76,7 @@ class AnkidownImporter(AddCards):
         self.onReset(keep=True)
         self.mw.col.autosave()
 
+        # Note model of the added card will be put infront of recent_models
         model_name = self.currentNote().note._model["name"]
         if model_name in config["recent_models"]:
             config["recent_models"].remove(model_name)
@@ -164,15 +165,21 @@ class AnkidownImporter(AddCards):
                     text = [text]
                 for raw_note in text:
                     self.buffer.append(AnkidownNote(file=file_name, text=raw_note))
-        rendered_correct_ids = []
+        rendered_ids = []
         for i,note in enumerate(self.buffer):
-            state = note.render(tmp_template=self.template, guess_model=True)
-            if state != -1:
-                rendered_correct_ids.append(i) 
-        self.buffer = [self.buffer[i] for i in rendered_correct_ids]
+            is_template_matched = note.render(tmp_template=self.template, guess_model=True)
+            if is_template_matched:
+                rendered_ids.append(i) 
+        if len(rendered_ids) != len(self.buffer):
+            showInfo("""Removed cards because template didn't match. 
+                        \n If you want to see them change \"remove_unmatched\" 
+                        in the settings to \"false\"""")
+        if config["remove_unmatched"]:
+            self.buffer = [self.buffer[i] for i in rendered_ids]
         self.setBuffer(0)  # Given root index
 
     def setBuffer(self, index):
+        # showInfo(index)
         self.bufferIndex = index
 
         self.form.noteTextEdit.setPlainText(self.buffer[index].text)
