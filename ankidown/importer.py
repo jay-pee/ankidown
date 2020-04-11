@@ -84,15 +84,15 @@ class AnkidownImporter(AddCards):
         writeConfig(config)
 
         self.buffer.remove(self.currentNote())
-
+        self.tally += 1
         if self.bufferIndex < len(self.buffer):
             self.setBuffer(self.bufferIndex)
         elif len(self.buffer) > 0:
             self.setBuffer(self.bufferIndex - 1)
         else:
-            self.setupBuffer()
-
-        self.tally += 1
+            self.setupBuffer()           
+            return False
+        return True
 
     def setupBuffer(self):
         self.buffer = [AnkidownNote()]
@@ -131,7 +131,18 @@ class AnkidownImporter(AddCards):
             self.setBuffer(self.bufferIndex - 1)
 
     def onToolButton(self):
-        showInfo("This is a placeholder for future versions")
+        self.mw.checkpoint("Add All") # can you revert changes because of it?
+        self.mw.progress.start(immediate=True, min=0, max=len(self.buffer))
+        for i in range(len(self.buffer)):
+            msg = '''
+            <b>Processing:</b> <br>
+            <b>Updated:</b> '''
+            if not self.addCards():
+                break
+            self.mw.progress.update(label=msg, value=i)
+        self.mw.progress.finish()
+        tooltip("Added {} Notes".format(self.tally), period=1000)
+        # showInfo("This is a placeholder for future versions")
 
     def onNoteTextChanged(self):
         text = self.form.noteTextEdit.toPlainText()
