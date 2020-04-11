@@ -182,11 +182,15 @@ class AnkidownImporter(AddCards):
             if is_template_matched:
                 rendered_ids.append(i) 
         if len(rendered_ids) != len(self.buffer):
-            showInfo("""Removed cards because template didn't match. 
-                        \n If you want to see them change \"remove_unmatched\" 
+            showInfo("""Removed texts because template didn't match. 
+                        Think about changing your template. 
+                        \n If you want to see the unmatched texts change \"remove_unmatched\" 
                         in the settings to \"false\"""")
         if config["remove_unmatched"]:
             self.buffer = [self.buffer[i] for i in rendered_ids]
+        if not self.buffer:
+            self.setupBuffer()
+            tooltip("Template didn't match texts")
         self.setBuffer(0)  # Given root index
 
     def setBuffer(self, index):
