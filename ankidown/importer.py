@@ -1,6 +1,7 @@
 from anki.hooks import addHook, remHook, runHook
 from anki.lang import _
 from anki.sound import clearAudioQueue
+from anki.importing.noteimp import ForeignNote, NoteImporter 
 
 import aqt
 from aqt.addcards import AddCards
@@ -130,7 +131,7 @@ class AnkidownImporter(AddCards):
         else:
             self.setBuffer(self.bufferIndex - 1)
 
-    def onToolButton(self):
+    def onToolButton2(self):
         self.mw.checkpoint("Add All") # can you revert changes because of it?
         self.mw.progress.start(immediate=True, min=0, max=len(self.buffer))
         for i in range(len(self.buffer)):
@@ -143,6 +144,31 @@ class AnkidownImporter(AddCards):
         self.mw.progress.finish()
         tooltip("Added {} Notes".format(self.tally), period=1000)
         # showInfo("This is a placeholder for future versions")
+
+    def onToolButton(self):
+        # Make Forign Notes
+        forign_notes = []
+        if not self.buffer[0].note:
+            return
+        
+        for note in self.buffer:
+            fnote = ForeignNote()
+            fnote.fields.extend(note.note.fields)
+            fnote.tags.extend(note.note.tags)
+            forign_notes.append(fnote)
+
+        # Init NoteImporter Class
+        importer = NoteImporter(self.mw.col, "")
+        importer.allowHTML = True
+        model = self.currentNote().note._model # can there be different note models in one import?
+        importer.mapping  = [f["name"] for f in model["flds"][:]]
+        importer.importMode = 0
+
+        # run
+        assert importer.mapping
+        importer.importNotes(forign_notes)
+        self.setupBuffer()
+        showInfo("\n".join(importer.log))
 
     def onNoteTextChanged(self):
         text = self.form.noteTextEdit.toPlainText()
